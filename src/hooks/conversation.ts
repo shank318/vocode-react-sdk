@@ -123,6 +123,7 @@ export const useConversation = (
           console.log("ddddddd")
           if (usRef.current && conversationRef.current) {
             console.log("ggggggg")
+            console.log("steasm", streamDestination.stream)
             usRef.current.createStreamFromMediaStream(streamDestination.stream)
               .then((stream) => {
 
@@ -143,7 +144,9 @@ export const useConversation = (
                           if (!recording) {
                             setRecording(true)
                             console.log("conversation.startRecording()1");
-                            console.log(conversationRef.current.startRecording());
+                            console.log(conversationRef.current.startRecording({
+                              audioOnly: true
+                            }));
                           }
 
                           console.log(
@@ -279,6 +282,7 @@ export const useConversation = (
       console.log("regewbgkwbeigb");
       usRef.current = ua;
       conversationRef.current = conversation
+
 
       setTimeout(async () => {
         console.log("conversation.2s")
