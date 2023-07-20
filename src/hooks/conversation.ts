@@ -104,6 +104,7 @@ export const useConversation = (
           const source = audioContext.createBufferSource();
           source.buffer = buffer;
           const streamDestination = audioContext.createMediaStreamDestination();
+          source.connect(audioContext.destination);
           source.connect(streamDestination);
           source.connect(audioAnalyser);
           setCurrentSpeaker("agent");
