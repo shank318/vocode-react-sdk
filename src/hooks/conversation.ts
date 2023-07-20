@@ -42,9 +42,7 @@ export const useConversation = (
   transcripts: Transcript[];
   currentSpeaker: CurrentSpeaker;
 } => {
-  console.log("djkbkfjbkff", conversation, ua)
   const [audioContext, setAudioContext] = React.useState<AudioContext>();
-  console.log("djkbkfjbkfffffgg")
   const [audioAnalyser, setAudioAnalyser] = React.useState<AnalyserNode>();
   const [audioQueue, setAudioQueue] = React.useState<Buffer[]>([]);
   const [currentSpeaker, setCurrentSpeaker] =
@@ -62,7 +60,6 @@ export const useConversation = (
   React.useEffect(() => {
     const audioContext = new AudioContext();
     setAudioContext(audioContext);
-
     const audioAnalyser = audioContext.createAnalyser();
     setAudioAnalyser(audioAnalyser);
   }, []);
@@ -118,7 +115,9 @@ export const useConversation = (
             setProcessing(false);
           };
 
+          console.log("ddddddd")
           if (ua && conversation) {
+            console.log("ggggggg")
             ua.createStreamFromMediaStream(streamDestination.stream)
               .then((stream) => {
                 //Publish the local stream to the conversation
