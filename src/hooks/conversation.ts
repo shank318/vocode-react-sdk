@@ -55,7 +55,7 @@ export const useConversation = (
   const [transcripts, setTranscripts] = React.useState<Transcript[]>([]);
   const [active, setActive] = React.useState(true);
   const toggleActive = () => setActive(!active);
-  const conversationRef = React.usRef<apiRTC.Conversation>();
+  const conversationRef = React.useRef<apiRTC.Conversation>();
   const usRef = React.useRef<UserAgent>();
   const [joined, setJoined] = React.useState(false);
 
