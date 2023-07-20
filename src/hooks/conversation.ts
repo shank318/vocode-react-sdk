@@ -130,8 +130,8 @@ export const useConversation = (
                     .join()
                     .then((response) => {
                       console.log("wfbwkefjwke joined")
+                      setJoined(true);
                     });
-                  setJoined(true);
                 }
 
 
@@ -261,23 +261,23 @@ export const useConversation = (
     var ua = new UserAgent({
       uri: "apiKey:" + apikey,
     });
-
-    console.log("regewbgkwbeigb");
-
+    console.log("ddddslbflwbfweij");
     //Connect the UserAgent and get a session
     ua.register().then((session) => {
       var conversationName = "CONVERSATION_NAME";
       const conversation = session.getOrCreateConversation(conversationName, {
         meshOnlyEnabled: true,
       });
-
+      console.log("regewbgkwbeigb");
       usRef.current = ua;
       conversationRef.current = conversation
 
       setTimeout(async () => {
-        console.log("conversation.s")
+        console.log("conversation.2s")
         console.log("conversation.stop()2", await conversation.stopRecording());
       }, 10 * 1000);
+    }).catch((err) => {
+      console.error("refister", err);
     });
 
 
