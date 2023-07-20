@@ -57,6 +57,7 @@ export const useConversation = (
   const toggleActive = () => setActive(!active);
   const conversationRef = React.usRef<apiRTC.Conversation>();
   const usRef = React.useRef<UserAgent>();
+  const [joined, setJoined] = React.useState(false);
 
   // get audio context and metadata about user audio
   React.useEffect(() => {
@@ -123,6 +124,17 @@ export const useConversation = (
             console.log("ggggggg")
             usRef.current.createStreamFromMediaStream(streamDestination.stream)
               .then((stream) => {
+
+                if (!joined) {
+                  conversationRef.current
+                    .join()
+                    .then((response) => {
+                      console.log("wfbwkefjwke joined")
+                    });
+                  setJoined(true);
+                }
+
+
                 //Publish the local stream to the conversation
                 conversationRef.current
                   .publish(stream)
@@ -266,13 +278,6 @@ export const useConversation = (
         console.log("conversation.s")
         console.log("conversation.stop()2", await conversation.stopRecording());
       }, 10 * 1000);
-
-      conversation
-        .join()
-        .then((response) => {
-          console.log("wfbwkefjwke joined")
-        });
-
     });
 
 
