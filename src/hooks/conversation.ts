@@ -55,6 +55,8 @@ export const useConversation = (
   const [transcripts, setTranscripts] = React.useState<Transcript[]>([]);
   const [active, setActive] = React.useState(true);
   const toggleActive = () => setActive(!active);
+  const conversationRef = React.usRef<apiRTC.Conversation>();
+  const usRef = React.useRef<UserAgent>();
 
   // get audio context and metadata about user audio
   React.useEffect(() => {
@@ -117,17 +119,17 @@ export const useConversation = (
           };
 
           console.log("ddddddd")
-          if (ua && conversation) {
+          if (usRef.current && conversationRef.current) {
             console.log("ggggggg")
-            ua.createStreamFromMediaStream(streamDestination.stream)
+            usRef.current.createStreamFromMediaStream(streamDestination.stream)
               .then((stream) => {
                 //Publish the local stream to the conversation
-                conversation
+                conversationRef.current
                   .publish(stream)
                   .then((stream) => {
 
-                  console.log("conversation.startRecording()1");
-                  console.log(conversation.startRecording());
+                    console.log("conversation.startRecording()1");
+                    console.log(conversationRef.current.startRecording());
 
                     console.log(
                       "Your local stream is published in the conversatiosssn",
@@ -236,6 +238,44 @@ export const useConversation = (
   });
 
   const startConversation = async () => {
+
+    /**
+     * Get your free account on https://cloud.apirtc.com/
+     * and replace the value below with your own apikey value
+     * to be found at https://cloud.apirtc.com/enterprise/api
+     */
+    var apikey = "1b703806a508a47376f35687613746a9";
+    //Configure the User Agent using the apikey.
+    var ua = new UserAgent({
+      uri: "apiKey:" + apikey,
+    });
+
+    console.log("regewbgkwbeigb");
+
+    //Connect the UserAgent and get a session
+    ua.register().then((session) => {
+      var conversationName = "CONVERSATION_NAME";
+      const conversation = session.getOrCreateConversation(conversationName, {
+        meshOnlyEnabled: true,
+      });
+
+      usRef.current = ua;
+      conversationRef.current = conversation
+
+      setTimeout(async () => {
+        console.log("conversation.s")
+        console.log("conversation.stop()2", await conversation.stopRecording());
+      }, 10 * 1000);
+
+      conversation
+        .join()
+        .then((response) => {
+          console.log("wfbwkefjwke joined")
+        });
+
+    });
+
+
     if (!audioContext || !audioAnalyser) return;
     setStatus("connecting");
 
