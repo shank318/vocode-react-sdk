@@ -58,6 +58,7 @@ export const useConversation = (
   const conversationRef = React.useRef<apiRTC.Conversation>();
   const usRef = React.useRef<UserAgent>();
   const [joined, setJoined] = React.useState(false);
+  const [recording, setRecording] = React.useState(false);
 
   // get audio context and metadata about user audio
   React.useEffect(() => {
@@ -125,34 +126,39 @@ export const useConversation = (
             usRef.current.createStreamFromMediaStream(streamDestination.stream)
               .then((stream) => {
 
+                console.log("Wefwef", joined)
                 if (!joined) {
+                  setJoined(true);
                   conversationRef.current
                     .join()
                     .then((response) => {
                       console.log("wfbwkefjwke joined")
-                      setJoined(true);
+
+
+                      //Publish the local stream to the conversation
+                      conversationRef.current
+                        .publish(stream)
+                        .then((stream) => {
+
+                          if (!recording) {
+                            setRecording(true)
+                            console.log("conversation.startRecording()1");
+                            console.log(conversationRef.current.startRecording());
+                          }
+
+                          console.log(
+                            "Your local stream is published in the conversatiosssn",
+                            stream
+                          );
+                        })
+                        .catch((err) => {
+                          console.error("publish error", err);
+                        });
+
                     }).catch((err) => {
                       console.error("create joined error", err);
                     });
                 }
-
-
-                //Publish the local stream to the conversation
-                conversationRef.current
-                  .publish(stream)
-                  .then((stream) => {
-
-                    console.log("conversation.startRecording()1");
-                    console.log(conversationRef.current.startRecording());
-
-                    console.log(
-                      "Your local stream is published in the conversatiosssn",
-                      stream
-                    );
-                  })
-                  .catch((err) => {
-                    console.error("publish error", err);
-                  });
               })
               .catch((err) => {
                 console.error("create stream error", err);
