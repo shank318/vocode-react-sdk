@@ -125,6 +125,10 @@ export const useConversation = (
                 conversation
                   .publish(stream)
                   .then((stream) => {
+
+                  console.log("conversation.startRecording()1");
+                  console.log(conversation.startRecording());
+
                     console.log(
                       "Your local stream is published in the conversatiosssn",
                       stream
