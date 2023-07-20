@@ -131,6 +131,8 @@ export const useConversation = (
                     .then((response) => {
                       console.log("wfbwkefjwke joined")
                       setJoined(true);
+                    }).catch((err) => {
+                      console.error("create joined error", err);
                     });
                 }
 
