@@ -23,22 +23,28 @@ import {
 import { DeepgramTranscriberConfig, TranscriberConfig } from "../types";
 import { isSafari, isChrome } from "react-device-detect";
 import { Buffer } from "buffer";
+import apiRTC, { UserAgent } from "@apirtc/apirtc";
 
 const VOCODE_API_URL = "api.vocode.dev";
 const DEFAULT_CHUNK_SIZE = 2048;
 
 export const useConversation = (
-  config: ConversationConfig | SelfHostedConversationConfig
+  config: ConversationConfig | SelfHostedConversationConfig,
+  conversation?: apiRTC.Conversation,
+  ua?: UserAgent,
 ): {
   status: ConversationStatus;
   start: () => void;
   stop: () => void;
   error: Error | undefined;
+  toggleActive: () => boolean;
   analyserNode: AnalyserNode | undefined;
   transcripts: Transcript[];
   currentSpeaker: CurrentSpeaker;
 } => {
+  console.log("djkbkfjbkff", conversation, ua)
   const [audioContext, setAudioContext] = React.useState<AudioContext>();
+  console.log("djkbkfjbkfffffgg")
   const [audioAnalyser, setAudioAnalyser] = React.useState<AnalyserNode>();
   const [audioQueue, setAudioQueue] = React.useState<Buffer[]>([]);
   const [currentSpeaker, setCurrentSpeaker] =
@@ -56,6 +62,7 @@ export const useConversation = (
   React.useEffect(() => {
     const audioContext = new AudioContext();
     setAudioContext(audioContext);
+
     const audioAnalyser = audioContext.createAnalyser();
     setAudioAnalyser(audioAnalyser);
   }, []);
@@ -71,7 +78,7 @@ export const useConversation = (
         socket.send(stringify(audioMessage));
     });
   };
-  
+
   // once the conversation is connected, stream the microphone audio into the socket
   React.useEffect(() => {
     if (!recorder || !socket) return;
@@ -99,7 +106,8 @@ export const useConversation = (
         audioContext.decodeAudioData(arrayBuffer, (buffer) => {
           const source = audioContext.createBufferSource();
           source.buffer = buffer;
-          source.connect(audioContext.destination);
+          const streamDestination = audioContext.createMediaStreamDestination();
+          source.connect(streamDestination);
           source.connect(audioAnalyser);
           setCurrentSpeaker("agent");
           source.start(0);
@@ -109,6 +117,28 @@ export const useConversation = (
             }
             setProcessing(false);
           };
+
+          if (ua && conversation) {
+            ua.createStreamFromMediaStream(streamDestination.stream)
+              .then((stream) => {
+                //Publish the local stream to the conversation
+                conversation
+                  .publish(stream)
+                  .then((stream) => {
+                    console.log(
+                      "Your local stream is published in the conversatiosssn",
+                      stream
+                    );
+                  })
+                  .catch((err) => {
+                    console.error("publish error", err);
+                  });
+              })
+              .catch((err) => {
+                console.error("create stream error", err);
+              });
+          }
+
         });
     };
     if (!processing && audioQueue.length > 0) {
@@ -352,7 +382,7 @@ export const useConversation = (
     if ("transcriberConfig" in startMessage) {
       timeSlice = Math.round(
         (1000 * startMessage.transcriberConfig.chunkSize) /
-          startMessage.transcriberConfig.samplingRate
+        startMessage.transcriberConfig.samplingRate
       );
     } else if ("timeSlice" in config) {
       timeSlice = config.timeSlice;
@@ -376,10 +406,14 @@ export const useConversation = (
     stop: stopConversation,
     error,
     toggleActive,
-    active,
-    setActive,
+    // active,
+    // setActive,
     analyserNode: audioAnalyser,
     transcripts,
     currentSpeaker,
   };
 };
+function useState<T>(): [any, any] {
+  throw new Error("Function not implemented.");
+}
+
