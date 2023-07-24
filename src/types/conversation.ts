@@ -14,7 +14,7 @@ export type AudioDeviceConfig = {
 };
 
 export type VocodeConfig = {
-  apiKey: string;
+  apiKey?: string;
   conversationId?: string;
   baseUrl?: string;
 };
