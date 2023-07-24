@@ -18,6 +18,7 @@ export interface AgentConfig {
   type: AgentType;
   initialMessage?: BaseMessage;
   generateResponses?: boolean;
+  allowedIdleTimeSeconds?: number;
   endConversationOnGoodbye?: boolean;
   sendFillerAudio?: boolean | FillerAudioConfig;
 }

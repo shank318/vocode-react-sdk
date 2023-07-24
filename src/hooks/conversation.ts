@@ -34,6 +34,7 @@ export const useConversation = (
   start: () => void;
   stop: () => void;
   error: Error | undefined;
+  toggleActive: () => void;
   analyserNode: AnalyserNode | undefined;
   transcripts: Transcript[];
   currentSpeaker: CurrentSpeaker;
@@ -71,7 +72,7 @@ export const useConversation = (
         socket.send(stringify(audioMessage));
     });
   };
-  
+
   // once the conversation is connected, stream the microphone audio into the socket
   React.useEffect(() => {
     if (!recorder || !socket) return;
@@ -352,7 +353,7 @@ export const useConversation = (
     if ("transcriberConfig" in startMessage) {
       timeSlice = Math.round(
         (1000 * startMessage.transcriberConfig.chunkSize) /
-          startMessage.transcriberConfig.samplingRate
+        startMessage.transcriberConfig.samplingRate
       );
     } else if ("timeSlice" in config) {
       timeSlice = config.timeSlice;
@@ -376,8 +377,8 @@ export const useConversation = (
     stop: stopConversation,
     error,
     toggleActive,
-    active,
-    setActive,
+    // active,
+    // setActive,
     analyserNode: audioAnalyser,
     transcripts,
     currentSpeaker,
