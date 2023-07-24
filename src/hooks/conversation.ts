@@ -35,6 +35,7 @@ export const useConversation = (
   stop: () => void;
   error: Error | undefined;
   toggleActive: () => void;
+  active: boolean;
   analyserNode: AnalyserNode | undefined;
   transcripts: Transcript[];
   currentSpeaker: CurrentSpeaker;
@@ -377,7 +378,7 @@ export const useConversation = (
     stop: stopConversation,
     error,
     toggleActive,
-    // active,
+    active,
     // setActive,
     analyserNode: audioAnalyser,
     transcripts,
