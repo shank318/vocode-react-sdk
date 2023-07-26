@@ -77,6 +77,7 @@ export const useConversation = (
 
   // once the conversation is connected, stream the microphone audio into the socket
   React.useEffect(() => {
+    console.log("VoCode Microphone status: ", active);
     if (!recorder || !socket) return;
     if (status === "connected") {
       if (active)
@@ -100,6 +101,7 @@ export const useConversation = (
       audioContext &&
         audioAnalyser &&
         audioContext.decodeAudioData(arrayBuffer, (buffer) => {
+          console.log("VoCode Playing audio..");
           const source = audioContext.createBufferSource();
           source.buffer = buffer;
           source.connect(audioContext.destination);
