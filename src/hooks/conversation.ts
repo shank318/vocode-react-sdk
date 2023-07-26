@@ -80,10 +80,13 @@ export const useConversation = (
     console.log("VoCode Microphone status: ", active);
     if (!recorder || !socket) return;
     if (status === "connected") {
-      if (active)
+      if (active) {
+        console.log("listener activated:");
         recorder.addEventListener("dataavailable", recordingDataListener);
-      else
+      } else {
+        console.log("listener de-activated:");
         recorder.removeEventListener("dataavailable", recordingDataListener);
+      }
     }
   }, [recorder, socket, status, active]);
 
