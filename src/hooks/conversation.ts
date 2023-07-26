@@ -28,7 +28,8 @@ const VOCODE_API_URL = "api.vocode.dev";
 const DEFAULT_CHUNK_SIZE = 2048;
 
 export const useConversation = (
-  config: ConversationConfig | SelfHostedConversationConfig
+  config: ConversationConfig | SelfHostedConversationConfig,
+  useRecorder: boolean
 ): {
   status: ConversationStatus;
   start: () => void;
@@ -203,6 +204,36 @@ export const useConversation = (
     subscribeTranscript,
   });
 
+  const getMicrophoneStream = async () => {
+    let audioStream;
+    try {
+      const trackConstraints: MediaTrackConstraints = {
+        echoCancellation: true,
+      };
+      if (config.audioDeviceConfig.inputDeviceId) {
+        console.log(
+          "Using input device",
+          config.audioDeviceConfig.inputDeviceId
+        );
+        trackConstraints.deviceId = config.audioDeviceConfig.inputDeviceId;
+      }
+      audioStream = await navigator.mediaDevices.getUserMedia({
+        video: false,
+        audio: trackConstraints,
+      });
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "NotAllowedError") {
+        alert(
+          "Allowlist this site at chrome://settings/content/microphone to talk to the bot."
+        );
+        error = new Error("Microphone access denied");
+      }
+      console.error(error);
+      stopConversation(error as Error);
+    }
+    return audioStream
+  }
+
   const startConversation = async () => {
     if (!audioContext || !audioAnalyser) return;
     setStatus("connecting");
@@ -267,39 +298,22 @@ export const useConversation = (
       }, 100);
     });
 
-    let audioStream;
-    try {
-      const trackConstraints: MediaTrackConstraints = {
-        echoCancellation: true,
-      };
-      if (config.audioDeviceConfig.inputDeviceId) {
-        console.log(
-          "Using input device",
-          config.audioDeviceConfig.inputDeviceId
-        );
-        trackConstraints.deviceId = config.audioDeviceConfig.inputDeviceId;
-      }
-      audioStream = await navigator.mediaDevices.getUserMedia({
-        video: false,
-        audio: trackConstraints,
-      });
-    } catch (error) {
-      if (error instanceof DOMException && error.name === "NotAllowedError") {
-        alert(
-          "Allowlist this site at chrome://settings/content/microphone to talk to the bot."
-        );
-        error = new Error("Microphone access denied");
-      }
-      console.error(error);
-      stopConversation(error as Error);
-      return;
-    }
-    const micSettings = audioStream.getAudioTracks()[0].getSettings();
-    console.log(micSettings);
     const inputAudioMetadata = {
-      samplingRate: micSettings.sampleRate || audioContext.sampleRate,
+      samplingRate: audioContext.sampleRate,
       audioEncoding: "linear16" as AudioEncoding,
     };
+
+    let audioStream;
+    if (useRecorder) {
+      audioStream = await getMicrophoneStream();
+      const micSettings = audioStream.getAudioTracks()[0].getSettings();
+      console.log(micSettings);
+
+      if (micSettings.sampleRate) {
+        inputAudioMetadata.samplingRate = micSettings.sampleRate;
+      }
+    }
+
     console.log("Input audio metadata", inputAudioMetadata);
 
     const outputAudioMetadata = {
@@ -337,8 +351,14 @@ export const useConversation = (
     }
 
     socket.send(stringify(startMessage));
-    console.log("Access to microphone granted");
     console.log(startMessage);
+
+    if (!audioStream) {
+      console.log("No microphone available, listening into watcher mode..");
+      return
+    }
+
+    console.log("Access to microphone granted");
 
     let recorderToUse = recorder;
     if (recorderToUse && recorderToUse.state === "paused") {
