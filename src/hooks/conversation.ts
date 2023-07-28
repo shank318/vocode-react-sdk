@@ -107,21 +107,6 @@ export const useConversation = (
           console.log("VoCode Playing audio..");
           const source = audioContext.createBufferSource();
           source.buffer = buffer;
-
-          const scriptProcessorNode = audioContext.createScriptProcessor(1024, 1, 1);
-          // Set up the audio processing function for the ScriptProcessorNode
-          // scriptProcessorNode.onaudioprocess = (event) => {
-          //   const outputBuffer = event.outputBuffer;
-          //   const botAudioBuffer = source.buffer.getChannelData(0);
-
-          //   // Copy the bot's audio buffer to the output
-          //   outputBuffer.getChannelData(0).set(botAudioBuffer);
-          // };
-
-          source.connect(scriptProcessorNode);
-          scriptProcessorNode.connect(audioContext.destination);
-
-
           source.connect(audioContext.destination);
           source.connect(audioAnalyser);
           setCurrentSpeaker("agent");
@@ -224,6 +209,20 @@ export const useConversation = (
     subscribeTranscript,
   });
 
+  // Function to generate a sine wave buffer
+  const createSineWaveBuffer = (audioContext, frequency, duration) => {
+    const sampleRate = audioContext.sampleRate;
+    const numberOfSamples = duration * sampleRate;
+    const buffer = audioContext.createBuffer(1, numberOfSamples, sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < numberOfSamples; i++) {
+      const t = i / sampleRate;
+      data[i] = Math.sin(2 * Math.PI * frequency * t);
+    }
+    return buffer;
+  };
+
+
   const getMicrophoneStream = async () => {
     let audioStream;
     try {
@@ -241,6 +240,56 @@ export const useConversation = (
         video: false,
         audio: trackConstraints,
       });
+
+      let mediaStreamDestination: MediaStreamAudioDestinationNode;
+      let mixedBuffer: AudioBuffer;
+      const micAudioContext = new AudioContext();
+      const mediaStreamSource = micAudioContext.createMediaStreamSource(audioStream);
+
+      // Create a ScriptProcessorNode to capture audio data
+      const scriptProcessorNode = micAudioContext.createScriptProcessor(4096, 2, 2);
+      scriptProcessorNode.onaudioprocess = (event) => {
+        const inputBuffer = event.inputBuffer;
+        const outputBuffer = event.outputBuffer;
+
+        if (!mixedBuffer) {
+          // Create a sine wave buffer to mix with the microphone audio
+          const testFrequency = 440; // 440Hz = A4
+          const testDuration = inputBuffer.duration;
+          const testBuffer = createSineWaveBuffer(micAudioContext, testFrequency, testDuration);
+
+          // Mix the sine wave buffer with the microphone audio
+          mixedBuffer = micAudioContext.createBuffer(
+            inputBuffer.numberOfChannels,
+            inputBuffer.length,
+            micAudioContext.sampleRate
+          );
+          for (let channel = 0; channel < inputBuffer.numberOfChannels; channel++) {
+            const inputData = inputBuffer.getChannelData(channel);
+            const testBufferData = testBuffer.getChannelData(0); // We assume a single-channel sine wave buffer
+
+            const mixedData = mixedBuffer.getChannelData(channel);
+            for (let sample = 0; sample < inputBuffer.length; sample++) {
+              mixedData[sample] = inputData[sample] + testBufferData[sample];
+            }
+          }
+        }
+
+        // Output the mixed audio data to the mediaStreamDestination
+        for (let channel = 0; channel < outputBuffer.numberOfChannels; channel++) {
+          const outputData = outputBuffer.getChannelData(channel);
+          const mixedData = mixedBuffer.getChannelData(channel);
+          outputData.set(mixedData);
+        }
+      };
+
+      // Connect the microphone source to the ScriptProcessorNode
+      mediaStreamSource.connect(scriptProcessorNode);
+
+      // Create the mediaStreamDestination and connect the ScriptProcessorNode to it
+      mediaStreamDestination = micAudioContext.createMediaStreamDestination();
+      scriptProcessorNode.connect(mediaStreamDestination);
+
     } catch (error) {
       if (error instanceof DOMException && error.name === "NotAllowedError") {
         alert(
