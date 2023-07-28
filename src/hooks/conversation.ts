@@ -119,7 +119,7 @@ export const useConversation = (
           };
         });
     };
-    if (!processing && audioQueue.length > 0) {
+    if (!processing && audioQueue.length > 0 && active) {
       setProcessing(true);
       const audio = audioQueue.shift();
       audio &&
@@ -127,7 +127,7 @@ export const useConversation = (
           .then((response) => response.arrayBuffer())
           .then(playArrayBuffer);
     }
-  }, [audioQueue, processing]);
+  }, [audioQueue, processing, active]);
 
   const stopConversation = (error?: Error) => {
     setAudioQueue([]);
