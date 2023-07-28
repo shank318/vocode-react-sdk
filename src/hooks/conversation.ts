@@ -125,7 +125,7 @@ export const useConversation = (
           }
 
           setCurrentSpeaker("agent");
-          botGainNode.start(0);
+          source.start(0);
           source.onended = () => {
             if (audioQueue.length <= 0) {
               setCurrentSpeaker("user");
