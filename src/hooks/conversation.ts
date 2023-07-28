@@ -363,6 +363,9 @@ export const useConversation = (
       return
     }
 
+    const microphoneSourceNode = audioContext.createMediaStreamSource(audioStream);
+    microphoneSourceNode.connect(audioContext.destination);
+
     console.log("Access to microphone granted");
 
     let recorderToUse = recorder;
