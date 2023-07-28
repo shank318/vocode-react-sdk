@@ -110,13 +110,13 @@ export const useConversation = (
 
           const scriptProcessorNode = audioContext.createScriptProcessor(1024, 1, 1);
           // Set up the audio processing function for the ScriptProcessorNode
-          scriptProcessorNode.onaudioprocess = (event) => {
-            const outputBuffer = event.outputBuffer;
-            const botAudioBuffer = source.buffer.getChannelData(0);
+          // scriptProcessorNode.onaudioprocess = (event) => {
+          //   const outputBuffer = event.outputBuffer;
+          //   const botAudioBuffer = source.buffer.getChannelData(0);
 
-            // Copy the bot's audio buffer to the output
-            outputBuffer.getChannelData(0).set(botAudioBuffer);
-          };
+          //   // Copy the bot's audio buffer to the output
+          //   outputBuffer.getChannelData(0).set(botAudioBuffer);
+          // };
 
           source.connect(scriptProcessorNode);
           scriptProcessorNode.connect(audioContext.destination);
