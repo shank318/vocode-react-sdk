@@ -106,22 +106,19 @@ export const useConversation = (
         audioAnalyser &&
         audioContext.decodeAudioData(arrayBuffer, (buffer) => {
           console.log("VoCode Playing audio..");
-          const botGainNode = audioContext.createGain();
           const mixedOutput = audioContext.createGain();
 
           const source = audioContext.createBufferSource();
           source.buffer = buffer;
 
-          botGainNode.gain.value = 1.0;
-          source.connect(botGainNode);
-          botGainNode.connect(audioContext.destination);
+          source.connect(audioContext.destination);
           source.connect(audioAnalyser);
 
           if (mediaStreamSource) {
             console.log("sekfewkfbkwef")
             mediaStreamSource.connect(mixedOutput);
             source.connect(mixedOutput);
-            mixedOutput.connect(audioContext.destination);
+            // mixedOutput.connect(audioContext.destination);
           }
 
           setCurrentSpeaker("agent");
