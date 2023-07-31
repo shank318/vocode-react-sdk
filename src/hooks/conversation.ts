@@ -107,21 +107,6 @@ export const useConversation = (
           console.log("VoCode Playing audio..");
           const source = audioContext.createBufferSource();
           source.buffer = buffer;
-
-          const scriptProcessorNode = audioContext.createScriptProcessor(1024, 1, 1);
-          // Set up the audio processing function for the ScriptProcessorNode
-          // scriptProcessorNode.onaudioprocess = (event) => {
-          //   const outputBuffer = event.outputBuffer;
-          //   const botAudioBuffer = source.buffer.getChannelData(0);
-
-          //   // Copy the bot's audio buffer to the output
-          //   outputBuffer.getChannelData(0).set(botAudioBuffer);
-          // };
-
-          source.connect(scriptProcessorNode);
-          scriptProcessorNode.connect(audioContext.destination);
-
-
           source.connect(audioContext.destination);
           source.connect(audioAnalyser);
           setCurrentSpeaker("agent");
