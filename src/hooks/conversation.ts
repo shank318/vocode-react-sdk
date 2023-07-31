@@ -100,6 +100,12 @@ export const useConversation = (
 
   // play audio that is queued
   React.useEffect(() => {
+    if (!active) {
+      // empty the queue
+      audioQueue.length = 0;
+      console.log("conversation is paused: clearing the queue, if available..")
+    }
+
     const playArrayBuffer = (arrayBuffer: ArrayBuffer) => {
       audioContext &&
         audioAnalyser &&
