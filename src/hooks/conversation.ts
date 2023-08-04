@@ -158,7 +158,11 @@ export const useConversation = (
       return config.backendUrl;
     } else if ("vocodeConfig" in config) {
       const baseUrl = config.vocodeConfig.baseUrl || VOCODE_API_URL;
-      return `wss://${baseUrl}/conversation?key=${config.vocodeConfig.apiKey}`;
+      let websocketScheme = 'wss';
+      if (baseUrl.includes('localhost')) {
+        websocketScheme = 'ws'
+      }
+      return `${websocketScheme}://${baseUrl}/conversation?key=${config.vocodeConfig.apiKey}`;
     } else {
       throw new Error("Invalid config");
     }
