@@ -161,6 +161,7 @@ export const useConversation = (
       let websocketScheme = 'wss';
       if (baseUrl.includes('localhost')) {
         websocketScheme = 'ws'
+        console.log(`using ${websocketScheme}`)
       }
       return `${websocketScheme}://${baseUrl}/conversation?key=${config.vocodeConfig.apiKey}`;
     } else {
