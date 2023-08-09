@@ -317,6 +317,8 @@ export const useConversation = (
     let audioStream;
     if (useRecorder) {
       audioStream = await getMicrophoneStream();
+      if (!audioStream) return
+      
       const micSettings = audioStream.getAudioTracks()[0].getSettings();
       console.log(micSettings);
 
